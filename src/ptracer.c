@@ -24,26 +24,33 @@ launch(char * const *argv){
 
 	if((p = fork()) < 0){
 		fprintf(stderr,"Error forking (%s)\n",strerror(errno));
-		return -1;
 	}else if(p == 0){
 		if(ptrace(PTRACE_TRACEME,0,0,0)){
 			fprintf(stderr,"Error invoking ptrace (%s)\n",strerror(errno));
 		}else if(execvp(*argv,argv)){
 			fprintf(stderr,"Error execing %s (%s)\n",*argv,strerror(errno));
 		}
-		return -1;
 	}else{
 		int status,r;
 
-		while((r = waitpid(p,&status,0)) < 0){
-			if(errno != EINTR){
-				fprintf(stderr,"Error waiting for %ju (%s)\n",
-						(uintmax_t)p,strerror(errno));
-				return -1;
+		/*if(ptrace(PTRACE_ATTACH,p,0,0)){
+			fprintf(stderr,"Error ptracing %ju (%s)\n",(uintmax_t)p,strerror(errno));
+		}*/
+		do{
+			while((r = waitpid(p,&status,0)) < 0){
+				if(errno != EINTR){
+					fprintf(stderr,"Error waiting for %ju (%s)\n",
+							(uintmax_t)p,strerror(errno));
+					return -1;
+				}
 			}
-		}
+			if(!WIFSTOPPED(status)){
+				return 0;
+			}
+		}while(ptrace(PTRACE_CONT,p,0,0) == 0);
+		fprintf(stderr,"Error ptracing %ju (%s)\n",(uintmax_t)p,strerror(errno));
 	}
-	return 0;
+	return -1;
 }
 
 static int
