@@ -31,12 +31,9 @@ launch(char * const *argv){
 			fprintf(stderr,"Error execing %s (%s)\n",*argv,strerror(errno));
 		}
 	}else{
-		int status,r;
-
-		/*if(ptrace(PTRACE_ATTACH,p,0,0)){
-			fprintf(stderr,"Error ptracing %ju (%s)\n",(uintmax_t)p,strerror(errno));
-		}*/
 		do{
+			int status,r;
+
 			while((r = waitpid(p,&status,0)) < 0){
 				if(errno != EINTR){
 					fprintf(stderr,"Error waiting for %ju (%s)\n",
