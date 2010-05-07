@@ -89,6 +89,7 @@ all: test
 
 test: $(TAGS) $(BINS)
 	$(OUT)/$(PTRACER) -- /bin/ls
+	$(OUT)/$(PTRACER) -- /bin/ls
 	$(OUT)/$(PTRACER) -- /bin/ls --color
 	$(OUT)/$(PTRACER) -- $(OUT)/$(PTRACER)
 

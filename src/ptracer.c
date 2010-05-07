@@ -31,6 +31,8 @@ launch(char * const *argv){
 			fprintf(stderr,"Error execing %s (%s)\n",*argv,strerror(errno));
 		}
 	}else{
+		uintmax_t ops;
+
 		do{
 			int status,r;
 
@@ -42,8 +44,10 @@ launch(char * const *argv){
 				}
 			}
 			if(!WIFSTOPPED(status)){
+				printf("Counted %ju instructions.\n",ops);
 				return 0;
 			}
+			++ops;
 		}while(ptrace(PTRACE_SINGLESTEP,p,0,0) == 0);
 		fprintf(stderr,"Error ptracing %ju (%s)\n",(uintmax_t)p,strerror(errno));
 	}
