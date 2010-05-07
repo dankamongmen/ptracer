@@ -47,7 +47,7 @@ launch(char * const *argv){
 			if(!WIFSTOPPED(status)){
 				return 0;
 			}
-		}while(ptrace(PTRACE_CONT,p,0,0) == 0);
+		}while(ptrace(PTRACE_SINGLESTEP,p,0,0) == 0);
 		fprintf(stderr,"Error ptracing %ju (%s)\n",(uintmax_t)p,strerror(errno));
 	}
 	return -1;
