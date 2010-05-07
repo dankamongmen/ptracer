@@ -18,7 +18,7 @@ BINS:=$(OUT)/$(PTRACER)
 # the per-language directory specifications above.
 CSRC:=$(shell find $(CSRCDIRS) -type f -name \*.c -print)
 CINC:=$(shell find $(CSRCDIRS) -type f -name \*.h -print)
-COBJ:=$(addsuffix .o,$(basename $(CSRC)))
+COBJ:=$(addprefix $(OUT)/,$(addsuffix .o,$(basename $(CSRC))))
 SRC:=$(CSRC)
 TAGS:=.tags
 
