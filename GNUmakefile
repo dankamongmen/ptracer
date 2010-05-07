@@ -37,7 +37,7 @@ ifdef MTUNE
 MFLAGS+=-mtune=$(MTUNE)
 endif
 # Not using: -Wpadded, -Wconversion, -Wstrict-overflow=(>1)
-WFLAGS+=-Wall -W -Wextra -Wmissing-prototypes -Wundef -Wshadow \
+WFLAGS+=-Wall -W -Wextra -Werror -Wmissing-prototypes -Wundef -Wshadow \
         -Wstrict-prototypes -Wmissing-declarations -Wnested-externs \
         -Wsign-compare -Wpointer-arith -Wbad-function-cast -Wcast-qual \
         -Wdeclaration-after-statement -Wfloat-equal -Wpacked -Winvalid-pch \
@@ -88,7 +88,8 @@ LFLAGS+=-Wl,-O,--default-symver,--enable-new-dtags,--as-needed,--warn-common \
 all: test
 
 test: $(TAGS) $(BINS)
-	./$(OUT)/$(PTRACER)
+	$(OUT)/$(PTRACER) -- /bin/ls
+	$(OUT)/$(PTRACER) -- $(OUT)/$(PTRACER)
 
 $(OUT)/$(PTRACER): $(COBJ)
 	@mkdir -p $(@D)
