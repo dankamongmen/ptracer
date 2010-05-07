@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <sys/ptrace.h>
 
 static int
 usage(FILE *fp,const char *a0){
@@ -25,7 +26,9 @@ launch(char * const *argv){
 		fprintf(stderr,"Error forking (%s)\n",strerror(errno));
 		return -1;
 	}else if(p == 0){
-		if(execvp(*argv,argv)){
+		if(ptrace(PTRACE_TRACEME,0,0,0)){
+			fprintf(stderr,"Error invoking ptrace (%s)\n",strerror(errno));
+		}else if(execvp(*argv,argv)){
 			fprintf(stderr,"Error execing %s (%s)\n",*argv,strerror(errno));
 		}
 		return -1;
