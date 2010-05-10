@@ -81,9 +81,9 @@ CFLAGS+=-pipe -std=gnu99 $(DFLAGS)
 MT_CFLAGS:=$(CFLAGS) -pthread $(MT_DFLAGS)
 CFLAGS+=$(IFLAGS) $(MFLAGS) $(OFLAGS) $(WFLAGS)
 MT_CFLAGS+=$(IFLAGS) $(MFLAGS) $(OFLAGS) $(WFLAGS)
-LIBFLAGS+=-lpthread
+DISASMLFLAGS:=-ldisasm
 LFLAGS+=-Wl,-O,--default-symver,--enable-new-dtags,--as-needed,--warn-common \
-	-Wl,--fatal-warnings,-z,noexecstack,-z,combreloc
+	-Wl,--fatal-warnings,-z,noexecstack,-z,combreloc $(DISASMLFLAGS)
 
 all: test
 

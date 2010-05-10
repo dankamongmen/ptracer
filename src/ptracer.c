@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <unistd.h>
+#include <libdis.h>
 #include <sys/user.h>
 #include <sys/wait.h>
 #include <sys/ptrace.h>
@@ -76,6 +77,7 @@ parse_args(int argc,char * const *argv){
 }
 
 int main(int argc,char **argv){
+	x86_init(opt_none,NULL,NULL);
 	if(parse_args(argc,argv)){
 		return EXIT_FAILURE;
 	}
