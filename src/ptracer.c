@@ -21,21 +21,22 @@ usage(FILE *fp,const char *a0){
 }
 
 static int
-decode(pid_t pid,uintmax_t ip,uintmax_t *oldip){
+decode(pid_t pid,uintmax_t ip){
 	unsigned buf[4],s;
 	x86_insn_t instr;
+	char line[80];
 
 	buf[0] = ptrace(PTRACE_PEEKTEXT,pid,ip,0);
 	buf[1] = ptrace(PTRACE_PEEKTEXT,pid,ip + sizeof(unsigned),0);
 	buf[2] = ptrace(PTRACE_PEEKTEXT,pid,ip + 2 * sizeof(unsigned),0);
 	buf[3] = ptrace(PTRACE_PEEKTEXT,pid,ip + 3 * sizeof(unsigned),0);
 	s = x86_disasm((unsigned char *)buf,sizeof(buf),0,0,&instr);
-	if(ip <= *oldip){
-		printf("%012lx] (%u) -0x%lx\n",ip,s,*oldip - ip);
+	if(s){
+		x86_format_insn(&instr,line,sizeof(line),intel_syntax);
 	}else{
-		printf("%012lx] (%u) 0x%lx\n",ip,s,ip - *oldip);
+		line[0] = '\0';
 	}
-	*oldip = ip;
+	printf("%012lx] (%x) %s\n",ip,s,line);
 	return 0;
 }
 
@@ -52,7 +53,7 @@ launch(char * const *argv){
 			fprintf(stderr,"Error execing %s (%s)\n",*argv,strerror(errno));
 		}
 	}else{
-		uintmax_t ops = 0,rip = 0;
+		uintmax_t ops = 0;
 
 		do{
 			struct user_regs_struct regs;
@@ -73,7 +74,7 @@ launch(char * const *argv){
 			if(ptrace(PTRACE_GETREGS,p,0,&regs)){
 				break;
 			}
-			if(decode(p,regs.rip,&rip)){
+			if(decode(p,regs.rip)){
 				return -1;
 			}
 		}while(ptrace(PTRACE_SINGLESTEP,p,0,0) == 0);
