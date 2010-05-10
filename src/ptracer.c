@@ -55,7 +55,9 @@ launch(char * const *argv){
 				break;
 			}
 			if(regs.rip <= rip){
-				printf("%012lx] 0x%lx\n",regs.rip,rip - regs.rip);
+				printf("%012lx] -0x%lx\n",regs.rip,rip - regs.rip);
+			}else{
+				printf("%012lx] 0x%lx\n",regs.rip,regs.rip - rip);
 			}
 			rip = regs.rip;
 		}while(ptrace(PTRACE_SINGLESTEP,p,0,0) == 0);
