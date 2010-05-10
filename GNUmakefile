@@ -7,7 +7,7 @@ MARCH:=native
 
 # Avoid unnecessary uses of 'pwd'; absolute paths aren't as robust as relative
 # paths against overlong total path names.
-OUT:=.out
+OUT:=out
 SRCDIR:=src
 CSRCDIRS:=$(wildcard $(SRCDIR)/*)
 

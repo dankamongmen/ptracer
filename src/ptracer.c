@@ -36,6 +36,7 @@ launch(char * const *argv){
 
 		do{
 			struct user_regs_struct regs;
+			unsigned long rip;
 			int status,r;
 
 			while((r = waitpid(p,&status,0)) < 0){
@@ -53,6 +54,10 @@ launch(char * const *argv){
 			if(ptrace(PTRACE_GETREGS,p,0,&regs)){
 				break;
 			}
+			if(regs.rip <= rip){
+				printf("0x%lx\n",rip - regs.rip);
+			}
+			rip = regs.rip;
 		}while(ptrace(PTRACE_SINGLESTEP,p,0,0) == 0);
 		fprintf(stderr,"Error ptracing %ju (%s)\n",(uintmax_t)p,strerror(errno));
 	}
