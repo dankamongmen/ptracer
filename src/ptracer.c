@@ -22,9 +22,10 @@ usage(FILE *fp,const char *a0){
 
 static int
 decode(pid_t pid,uintmax_t ip){
-	unsigned buf[4],s;
+	unsigned char buf[16],z;
 	x86_insn_t instr;
 	char line[80];
+	int s,r;
 
 	buf[0] = ptrace(PTRACE_PEEKTEXT,pid,ip,0);
 	buf[1] = ptrace(PTRACE_PEEKTEXT,pid,ip + sizeof(unsigned),0);
@@ -36,7 +37,15 @@ decode(pid_t pid,uintmax_t ip){
 	}else{
 		line[0] = '\0';
 	}
-	printf("%012lx] (%x) %s\n",ip,s,line);
+	r = printf("%012lx] (%x) %s",ip,s,line);
+	while(r > 0 && r < 40){ // FIXME fucks up anyway due to \t's in line
+		printf(" ");
+		++r;
+	}
+	for(z = 0 ; z < s ; ++z){
+		printf("%02x ",buf[z]);
+	}
+	printf("\n");
 	return 0;
 }
 
