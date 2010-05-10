@@ -21,6 +21,25 @@ usage(FILE *fp,const char *a0){
 }
 
 static int
+decode(pid_t pid,uintmax_t ip,uintmax_t *oldip){
+	unsigned buf[4],s;
+	x86_insn_t instr;
+
+	buf[0] = ptrace(PTRACE_PEEKTEXT,pid,ip,0);
+	buf[1] = ptrace(PTRACE_PEEKTEXT,pid,ip + sizeof(unsigned),0);
+	buf[2] = ptrace(PTRACE_PEEKTEXT,pid,ip + 2 * sizeof(unsigned),0);
+	buf[3] = ptrace(PTRACE_PEEKTEXT,pid,ip + 3 * sizeof(unsigned),0);
+	s = x86_disasm((unsigned char *)buf,sizeof(buf),0,0,&instr);
+	if(ip <= *oldip){
+		printf("%012lx] (%u) -0x%lx\n",ip,s,*oldip - ip);
+	}else{
+		printf("%012lx] (%u) 0x%lx\n",ip,s,ip - *oldip);
+	}
+	*oldip = ip;
+	return 0;
+}
+
+static int
 launch(char * const *argv){
 	pid_t p;
 
@@ -33,11 +52,10 @@ launch(char * const *argv){
 			fprintf(stderr,"Error execing %s (%s)\n",*argv,strerror(errno));
 		}
 	}else{
-		uintmax_t ops;
+		uintmax_t ops = 0,rip = 0;
 
 		do{
 			struct user_regs_struct regs;
-			unsigned long rip;
 			int status,r;
 
 			while((r = waitpid(p,&status,0)) < 0){
@@ -55,12 +73,9 @@ launch(char * const *argv){
 			if(ptrace(PTRACE_GETREGS,p,0,&regs)){
 				break;
 			}
-			if(regs.rip <= rip){
-				printf("%012lx] -0x%lx\n",regs.rip,rip - regs.rip);
-			}else{
-				printf("%012lx] 0x%lx\n",regs.rip,regs.rip - rip);
+			if(decode(p,regs.rip,&rip)){
+				return -1;
 			}
-			rip = regs.rip;
 		}while(ptrace(PTRACE_SINGLESTEP,p,0,0) == 0);
 		fprintf(stderr,"Error ptracing %ju (%s)\n",(uintmax_t)p,strerror(errno));
 	}
@@ -88,6 +103,10 @@ int main(int argc,char **argv){
 	}
 	argv += 2; // FIXME handle options
 	if(launch(argv)){
+		return EXIT_FAILURE;
+	}
+	if((r = x86_cleanup()) != 1){
+		fprintf(stderr,"Couldn't clean up libdisasm (%d)\n",r);
 		return EXIT_FAILURE;
 	}
 	return EXIT_SUCCESS;
