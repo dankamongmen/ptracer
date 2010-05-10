@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <unistd.h>
+#include <sys/user.h>
 #include <sys/wait.h>
 #include <sys/ptrace.h>
 
@@ -34,6 +35,7 @@ launch(char * const *argv){
 		uintmax_t ops;
 
 		do{
+			struct user_regs_struct regs;
 			int status,r;
 
 			while((r = waitpid(p,&status,0)) < 0){
@@ -48,6 +50,9 @@ launch(char * const *argv){
 				return 0;
 			}
 			++ops;
+			if(ptrace(PTRACE_GETREGS,p,0,&regs)){
+				break;
+			}
 		}while(ptrace(PTRACE_SINGLESTEP,p,0,0) == 0);
 		fprintf(stderr,"Error ptracing %ju (%s)\n",(uintmax_t)p,strerror(errno));
 	}
