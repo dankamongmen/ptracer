@@ -77,8 +77,13 @@ parse_args(int argc,char * const *argv){
 }
 
 int main(int argc,char **argv){
-	x86_init(opt_none,NULL,NULL);
+	int r;
+
 	if(parse_args(argc,argv)){
+		return EXIT_FAILURE;
+	}
+	if((r = x86_init(opt_none,NULL,NULL)) != 1){
+		fprintf(stderr,"Couldn't initialize libdisasm (%d)\n",r);
 		return EXIT_FAILURE;
 	}
 	argv += 2; // FIXME handle options
