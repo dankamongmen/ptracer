@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <dlfcn.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
@@ -24,6 +25,7 @@ static int
 decode(pid_t pid,uintmax_t ip){
 	unsigned char buf[16],z;
 	x86_insn_t instr;
+	Dl_info dinfo;
 	char line[80];
 	int s,r;
 
@@ -37,7 +39,11 @@ decode(pid_t pid,uintmax_t ip){
 	}else{
 		line[0] = '\0';
 	}
-	r = printf("%012lx] (%x) %s",ip,s,line);
+	if(dladdr((void *)ip,&dinfo) == 0 && dinfo.dli_sname){
+		r = printf("%012lx:%s] (%x) %s",ip,dinfo.dli_sname,s,line);
+	}else{
+		r = printf("%012lx] (%x) %s",ip,s,line);
+	}
 	while(r > 0 && r < 40){ // FIXME fucks up anyway due to \t's in line
 		printf(" ");
 		++r;

@@ -28,7 +28,7 @@ GLOBOBJDEPS:=$(CINC) $(MAKEFILE_LIST) $(TAGS)
 
 # Debugging flags. Normally unused, but uncomment the 2nd line to enable.
 DEBUGFLAGS:=-rdynamic -g -D_FORTIFY_SOURCE=2
-DFLAGS+=$(DEBUGFLAGS)
+DFLAGS+=$(DEBUGFLAGS) -D_GNU_SOURCE
 
 # Main compilation flags. Define with += to inherit from system-specific flags.
 IFLAGS+=-I$(SRCDIR)
@@ -83,7 +83,7 @@ CFLAGS+=$(IFLAGS) $(MFLAGS) $(OFLAGS) $(WFLAGS)
 MT_CFLAGS+=$(IFLAGS) $(MFLAGS) $(OFLAGS) $(WFLAGS)
 DISASMLFLAGS:=-ldisasm
 LFLAGS+=-Wl,-O,--default-symver,--enable-new-dtags,--as-needed,--warn-common \
-	-Wl,--fatal-warnings,-z,noexecstack,-z,combreloc $(DISASMLFLAGS)
+	-Wl,--fatal-warnings,-z,noexecstack,-z,combreloc $(DISASMLFLAGS) -ldl
 
 all: test
 
