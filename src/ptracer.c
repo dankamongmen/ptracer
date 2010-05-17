@@ -39,10 +39,14 @@ decode(pid_t pid,uintmax_t ip){
 	}else{
 		line[0] = '\0';
 	}
-	if(dladdr((void *)ip,&dinfo) == 0 && dinfo.dli_sname){
-		r = printf("%012lx:%s] (%x) %s",ip,dinfo.dli_sname,s,line);
-	}else{
+	if((r = dladdr((void *)ip,&dinfo)) == 0){
 		r = printf("%012lx] (%x) %s",ip,s,line);
+	}else{
+		if(dinfo.dli_sname){
+			r = printf("%012lx:%s] (%x) %s",ip,dinfo.dli_sname,s,line);
+		}else{
+			r = printf("%012lx:%s] (%x) %s",ip,dinfo.dli_fname,s,line);
+		}
 	}
 	while(r > 0 && r < 40){ // FIXME fucks up anyway due to \t's in line
 		printf(" ");
