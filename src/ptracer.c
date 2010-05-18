@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <getopt.h>
 #include <unistd.h>
 #include <libdis.h>
 #include <sys/user.h>
@@ -72,6 +73,10 @@ static int
 launch(char * const *argv){
 	pid_t p;
 
+	if(fflush(stdout) || fflush(stderr)){
+		fprintf(stderr,"Error flushing output prior to fork (%s)\n",strerror(errno));
+		return -1;
+	}
 	if((p = fork()) < 0){
 		fprintf(stderr,"Error forking (%s)\n",strerror(errno));
 	}else if(p == 0){
@@ -111,27 +116,46 @@ launch(char * const *argv){
 	return -1;
 }
 
+#define OPTSTR "h"
 static int
-parse_args(int argc,char * const *argv){
-	if(argc < 3){
-		usage(stderr,*argv);
-		return -1;
+parse_args(int *argc,char * const *argv){
+	const struct option longopts[] = {
+		{ "help",	0,	NULL,	'h'	},
+	};
+	int lidx,r;
+
+	opterr = 0; // preclude error diagnostics from getopt()
+	while((r = getopt_long(*argc,argv,OPTSTR,longopts,&lidx)) >= 0){
+		switch(r){
+			case 'h':
+				usage(stdout,argv[0]);
+				exit(EXIT_SUCCESS);
+			default:
+			case '?':
+				fprintf(stderr,"Unknown option: %c\n",optopt);
+				usage(stderr,argv[0]);
+				return -1;
+		}
 	}
 	return 0;
 }
+#undef OPTSTR
 
 int main(int argc,char **argv){
 	int r;
 
-	if(parse_args(argc,argv)){
+	if(parse_args(&argc,argv)){
 		return EXIT_FAILURE;
+	}
+	if(argv[optind] == NULL){
+		usage(stderr,*argv);
+		return -1;
 	}
 	if((r = x86_init(opt_none,NULL,NULL)) != 1){
 		fprintf(stderr,"Couldn't initialize libdisasm (%d)\n",r);
 		return EXIT_FAILURE;
 	}
-	argv += 2; // FIXME handle options
-	if(launch(argv)){
+	if(launch(argv + optind)){
 		return EXIT_FAILURE;
 	}
 	if((r = x86_cleanup()) != 1){
