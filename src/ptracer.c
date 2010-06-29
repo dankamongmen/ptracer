@@ -28,7 +28,7 @@ decode(pid_t pid,uintmax_t ip){
 	x86_insn_t instr;
 	Dl_info dinfo;
 	char line[80];
-	int s,r;
+	int s,r,ugh;
 
 	buf[0] = ptrace(PTRACE_PEEKTEXT,pid,ip,0);
 	buf[1] = ptrace(PTRACE_PEEKTEXT,pid,ip + sizeof(unsigned),0);
@@ -41,12 +41,13 @@ decode(pid_t pid,uintmax_t ip){
 		line[0] = '\0';
 	}
 	if((r = dladdr((void *)ip,&dinfo)) == 0){
-		r = printf("%012lx] (%x) %s",ip,s,line);
+		r = printf("%012lx] (%x)%n %s\n",ip,s,&ugh,line);
 	}else{
 		if(dinfo.dli_sname && ip == (uintmax_t)dinfo.dli_saddr){
-			r = printf("%012lx:%s] (%x) %s",ip,dinfo.dli_sname,s,line);
+			r = printf("%012lx:%s] (%x)%n %s\n",ip,dinfo.dli_sname,s,&ugh,line);
 		}else if(dinfo.dli_sname){
-			r = printf("%lx:%s] (%x) %s",ip - (uintmax_t)dinfo.dli_saddr,dinfo.dli_sname,s,line);
+			r = printf("%lx:%s] (%x)%n %s\n",ip - (uintmax_t)dinfo.dli_saddr,
+					dinfo.dli_sname,s,&ugh,line);
 		}else{
 			const char *sl;
 
@@ -55,17 +56,18 @@ decode(pid_t pid,uintmax_t ip){
 			}else{
 				sl = dinfo.dli_fname;
 			}
-			r = printf("%012lx:%s] (%x) %s",ip,sl,s,line);
+			r = printf("%012lx:%s] (%x)%n %s\n",ip,sl,s,&ugh,line);
 		}
 	}
-	while(r > 0 && r < 40){ // FIXME fucks up anyway due to \t's in line
-		printf(" ");
-		++r;
+	if(s){
+		for(z = 0 ; z < ugh ; ++z){
+			putc_unlocked(' ',stdout);
+		}
+		for(z = 0 ; z < s ; ++z){
+			printf(" %02x ",buf[z]);
+		}
+		printf("\n");
 	}
-	for(z = 0 ; z < s ; ++z){
-		printf("%02x ",buf[z]);
-	}
-	printf("\n");
 	return 0;
 }
 
