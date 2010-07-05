@@ -1,6 +1,6 @@
 .DELETE_ON_ERROR:
 .PHONY: all test clean mrproper
-.DEFAULT_GOAL:=test
+.DEFAULT_GOAL:=all
 
 TAGBIN:=ctags
 MARCH:=native
@@ -85,9 +85,9 @@ DISASMLFLAGS:=-ldisasm
 LFLAGS+=-Wl,-O,--default-symver,--enable-new-dtags,--as-needed,--warn-common \
 	-Wl,--fatal-warnings,-z,noexecstack,-z,combreloc $(DISASMLFLAGS) -ldl
 
-all: test
+all: $(TAGS) $(BINS)
 
-test: $(TAGS) $(BINS)
+test: all
 	$(OUT)/$(PTRACER) -- /bin/ls
 	$(OUT)/$(PTRACER) -- /bin/ls
 	$(OUT)/$(PTRACER) -- /bin/ls --color
