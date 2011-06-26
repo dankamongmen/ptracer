@@ -41,12 +41,12 @@ decode(pid_t pid,uintmax_t ip){
 		line[0] = '\0';
 	}
 	if((r = dladdr((void *)ip,&dinfo)) == 0){
-		r = printf("%012lx] (%x)%n %s\n",ip,s,&ugh,line);
+		r = printf("%012jx] (%x)%n %s\n",ip,s,&ugh,line);
 	}else{
 		if(dinfo.dli_sname && ip == (uintmax_t)dinfo.dli_saddr){
-			r = printf("%012lx:%s] (%x)%n %s\n",ip,dinfo.dli_sname,s,&ugh,line);
+			r = printf("%012jx:%s] (%x)%n %s\n",ip,dinfo.dli_sname,s,&ugh,line);
 		}else if(dinfo.dli_sname){
-			r = printf("%lx:%s] (%x)%n %s\n",ip - (uintmax_t)dinfo.dli_saddr,
+			r = printf("%jx:%s] (%x)%n %s\n",ip - (uintmax_t)dinfo.dli_saddr,
 					dinfo.dli_sname,s,&ugh,line);
 		}else{
 			const char *sl;
@@ -56,7 +56,7 @@ decode(pid_t pid,uintmax_t ip){
 			}else{
 				sl = dinfo.dli_fname;
 			}
-			r = printf("%012lx:%s] (%x)%n %s\n",ip,sl,s,&ugh,line);
+			r = printf("%012jx:%s] (%x)%n %s\n",ip,sl,s,&ugh,line);
 		}
 	}
 	if(s){
