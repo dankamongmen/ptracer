@@ -1,0 +1,4 @@
+ptracer by nick black <nickblack@linux.com>
+
+ptracer is a simple wrapper around ptrace(2). It'll step through a process,
+using libdisasm to disassembler and show each instruction executed.
