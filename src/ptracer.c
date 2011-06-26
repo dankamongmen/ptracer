@@ -22,6 +22,12 @@ usage(FILE *fp,const char *a0){
 	return t;
 }
 
+#if __WORDSIZE == 64
+#define IP(regs) regs.rip
+#else
+#define IP(regs) regs.eip
+#endif
+
 static int
 decode(pid_t pid,unsigned long ip){
 	unsigned char buf[16],z;
@@ -109,7 +115,7 @@ launch(char * const *argv){
 			if(ptrace(PTRACE_GETREGS,p,0,&regs)){
 				break;
 			}
-			if(decode(p,regs.rip)){
+			if(decode(p,IP(regs))){
 				return -1;
 			}
 		}while(ptrace(PTRACE_SINGLESTEP,p,0,0) == 0);
